@@ -5,12 +5,13 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
-import android.graphics.*;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.BitmapRegionDecoder;
+import android.graphics.Point;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
-import androidx.annotation.Keep;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import android.text.TextUtils;
 
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
@@ -20,6 +21,10 @@ import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import androidx.annotation.Keep;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 /**
  * Default implementation of {@link com.davemorrissey.labs.subscaleview.decoder.ImageRegionDecoder}
@@ -109,6 +114,13 @@ public class SkiaImageRegionDecoder implements ImageRegionDecoder {
                 }
             }
         }
+        return new Point(decoder.getWidth(), decoder.getHeight());
+    }
+
+    @Override
+    @NonNull
+    public Point init(Context context, @NonNull byte[] data) throws Exception {
+        decoder = BitmapRegionDecoder.newInstance(data, 0, data.length, false);
         return new Point(decoder.getWidth(), decoder.getHeight());
     }
 

@@ -29,6 +29,8 @@ public interface ImageRegionDecoder {
      */
     @NonNull Point init(Context context, @NonNull Uri uri) throws Exception;
 
+    @NonNull Point init(Context context, @NonNull byte[] data) throws Exception;
+
     /**
      * <p>
      * Decode a region of the image with the given sample size. This method is called off the UI

@@ -102,4 +102,12 @@ public class SkiaImageDecoder implements ImageDecoder {
         }
         return bitmap;
     }
+
+    @Override
+    @NonNull
+    public Bitmap decode(@NonNull byte[] data) throws Exception {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inPreferredConfig = bitmapConfig;
+        return BitmapFactory.decodeByteArray(data, 0, data.length, options);
+    }
 }

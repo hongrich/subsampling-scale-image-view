@@ -3,11 +3,12 @@ package com.davemorrissey.labs.subscaleview;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.net.Uri;
-import androidx.annotation.NonNull;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+
+import androidx.annotation.NonNull;
 
 /**
  * Helper class used to set the source and additional attributes from a variety of sources. Supports
@@ -25,6 +26,7 @@ public final class ImageSource {
     private final Uri uri;
     private final Bitmap bitmap;
     private final Integer resource;
+    private final byte[] data;
     private boolean tile;
     private int sWidth;
     private int sHeight;
@@ -35,6 +37,7 @@ public final class ImageSource {
         this.bitmap = bitmap;
         this.uri = null;
         this.resource = null;
+        this.data = null;
         this.tile = false;
         this.sWidth = bitmap.getWidth();
         this.sHeight = bitmap.getHeight();
@@ -57,6 +60,7 @@ public final class ImageSource {
         this.bitmap = null;
         this.uri = uri;
         this.resource = null;
+        this.data = null;
         this.tile = true;
     }
 
@@ -64,6 +68,15 @@ public final class ImageSource {
         this.bitmap = null;
         this.uri = null;
         this.resource = resource;
+        this.data = null;
+        this.tile = true;
+    }
+
+    private ImageSource(@NonNull byte[] data) {
+        this.bitmap = null;
+        this.uri = null;
+        this.resource = null;
+        this.data = data;
         this.tile = true;
     }
 
@@ -156,6 +169,11 @@ public final class ImageSource {
         return new ImageSource(bitmap, true);
     }
 
+    @NonNull
+    public static ImageSource data(@NonNull byte[] data) {
+        return new ImageSource(data);
+    }
+
     /**
      * Enable tiling of the image. This does not apply to preview images which are always loaded as a single bitmap.,
      * and tiling cannot be disabled when displaying a region of the source image.
@@ -237,6 +255,10 @@ public final class ImageSource {
 
     protected final Integer getResource() {
         return resource;
+    }
+
+    protected final byte[] getData() {
+        return data;
     }
 
     protected final boolean getTile() {

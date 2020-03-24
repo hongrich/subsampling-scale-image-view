@@ -27,4 +27,6 @@ public interface ImageDecoder {
      */
     @NonNull Bitmap decode(Context context, @NonNull Uri uri) throws Exception;
 
+    @NonNull Bitmap decode(@NonNull byte[] data) throws Exception;
+
 }

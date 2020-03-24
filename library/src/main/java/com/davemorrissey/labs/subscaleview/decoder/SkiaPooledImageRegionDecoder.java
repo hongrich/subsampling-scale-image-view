@@ -14,9 +14,6 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
-import androidx.annotation.Keep;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -34,6 +31,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Pattern;
+
+import androidx.annotation.Keep;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import static android.content.Context.ACTIVITY_SERVICE;
 
@@ -72,6 +73,7 @@ public class SkiaPooledImageRegionDecoder implements ImageRegionDecoder {
 
     private Context context;
     private Uri uri;
+    private byte[] data;
 
     private long fileLength = Long.MAX_VALUE;
     private final Point imageDimensions = new Point(0, 0);
@@ -119,6 +121,15 @@ public class SkiaPooledImageRegionDecoder implements ImageRegionDecoder {
         return this.imageDimensions;
     }
 
+    @Override
+    @NonNull
+    public Point init(Context context, @NonNull byte[] data) throws Exception {
+        this.context = context;
+        this.data = data;
+        initialiseDecoder();
+        return this.imageDimensions;
+    }
+
     /**
      * Initialises extra decoders for as long as {@link #allowAdditionalDecoder(int, long)} returns
      * true and the pool has not been recycled.
@@ -156,6 +167,29 @@ public class SkiaPooledImageRegionDecoder implements ImageRegionDecoder {
      * been recycled while it was created.
      */
     private void initialiseDecoder() throws Exception {
+        if (uri != null) {
+            initialiseDecoderFromUri();
+        } else {
+            initialiseDecoderFromData();
+        }
+    }
+
+    private void initialiseDecoderFromData() throws Exception {
+        BitmapRegionDecoder decoder = BitmapRegionDecoder.newInstance(data, 0, data.length, false);
+
+        this.fileLength = data.length;
+        this.imageDimensions.set(decoder.getWidth(), decoder.getHeight());
+        decoderLock.writeLock().lock();
+        try {
+            if (decoderPool != null) {
+                decoderPool.add(decoder);
+            }
+        } finally {
+            decoderLock.writeLock().unlock();
+        }
+    }
+
+    private void initialiseDecoderFromUri() throws Exception {
         String uriString = uri.toString();
         BitmapRegionDecoder decoder;
         long fileLength = Long.MAX_VALUE;
@@ -304,6 +338,7 @@ public class SkiaPooledImageRegionDecoder implements ImageRegionDecoder {
                 decoderPool = null;
                 context = null;
                 uri = null;
+                data = null;
             }
         } finally {
             decoderLock.writeLock().unlock();
